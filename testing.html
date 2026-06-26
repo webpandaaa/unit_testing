@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Java Unit Testing — Complete Guide</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600;700;900&display=swap');
+
+  :root {
+    --bg:       #0d1117;
+    --surface:  #161b22;
+    --card:     #1c2128;
+    --border:   #30363d;
+    --text:     #e6edf3;
+    --muted:    #8b949e;
+    --junit:    #f78166;
+    --testng:   #79c0ff;
+    --mockito:  #56d364;
+    --accent:   #d2a8ff;
+    --yellow:   #e3b341;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.7;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 64px 24px 56px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(210,168,255,.08), transparent);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(210,168,255,.12);
+    color: var(--accent);
+    border: 1px solid rgba(210,168,255,.25);
+    border-radius: 20px;
+    padding: 4px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3.4rem);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -.03em;
+    margin-bottom: 16px;
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero p {
+    color: var(--muted);
+    font-size: 1.05rem;
+    max-width: 560px;
+    margin: 0 auto 36px;
+  }
+  .pill-row {
+    display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+  }
+  .pill {
+    padding: 8px 22px;
+    border-radius: 24px;
+    font-size: .82rem;
+    font-weight: 600;
+    letter-spacing: .04em;
+    cursor: pointer;
+    border: none;
+    transition: opacity .2s, transform .15s;
+  }
+  .pill:hover { opacity: .85; transform: translateY(-2px); }
+  .pill-junit  { background: var(--junit);  color: #0d1117; }
+  .pill-testng { background: var(--testng); color: #0d1117; }
+  .pill-mock   { background: var(--mockito);color: #0d1117; }
+  .pill-all    { background: var(--accent); color: #0d1117; }
+
+  /* ── NAV TABS ── */
+  .tab-bar {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    padding: 0 24px;
+    overflow-x: auto;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .tab {
+    padding: 14px 20px;
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    border: none;
+    background: none;
+    border-bottom: 2px solid transparent;
+    transition: color .2s, border-color .2s;
+    white-space: nowrap;
+  }
+  .tab.active       { color: var(--text); border-bottom-color: var(--accent); }
+  .tab:hover:not(.active) { color: var(--text); }
+
+  /* ── LAYOUT ── */
+  .content { max-width: 900px; margin: 0 auto; padding: 48px 24px 80px; }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ── SECTION HEADERS ── */
+  .sec-header {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 32px;
+  }
+  .sec-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+  }
+  .sec-title { font-size: 1.7rem; font-weight: 800; }
+  .sec-sub   { color: var(--muted); font-size: .9rem; margin-top: 2px; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .card p { color: #c9d1d9; font-size: .93rem; }
+
+  /* ── GRID ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  @media(max-width:600px){ .grid-2 { grid-template-columns: 1fr; } }
+
+  /* ── CODE BLOCKS ── */
+  .code-wrap {
+    background: #010409;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin: 20px 0;
+    overflow: hidden;
+  }
+  .code-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px;
+    background: #161b22;
+    border-bottom: 1px solid var(--border);
+    font-size: .78rem;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .code-dots { display: flex; gap: 6px; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot-r { background: #ff5f56; }
+  .dot-y { background: #febc2e; }
+  .dot-g { background: #27c840; }
+  pre {
+    padding: 20px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .82rem;
+    line-height: 1.7;
+    color: #e6edf3;
+  }
+  .kw  { color: #ff7b72; }
+  .ann { color: #d2a8ff; }
+  .str { color: #a5d6ff; }
+  .cmt { color: #8b949e; font-style: italic; }
+  .cls { color: #ffa657; }
+  .met { color: #79c0ff; }
+  .num { color: #56d364; }
+
+  /* ── HIGHLIGHT BOXES ── */
+  .note {
+    border-left: 3px solid var(--yellow);
+    background: rgba(227,179,65,.07);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px;
+    font-size: .9rem;
+    color: #c9d1d9;
+    margin: 20px 0;
+  }
+  .tip {
+    border-left: 3px solid var(--mockito);
+    background: rgba(86,211,100,.07);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px;
+    font-size: .9rem;
+    color: #c9d1d9;
+    margin: 20px 0;
+  }
+
+  /* ── COMPARISON TABLE ── */
+  table {
+    width: 100%; border-collapse: collapse;
+    font-size: .88rem; margin: 20px 0;
+  }
+  th {
+    background: var(--surface);
+    color: var(--accent);
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 700;
+    border-bottom: 2px solid var(--border);
+  }
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    color: #c9d1d9;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,.02); }
+  .check { color: var(--mockito); font-weight: 700; }
+  .cross { color: var(--junit); }
+
+  /* ── STEP LIST ── */
+  .step-list { list-style: none; }
+  .step-list li {
+    display: flex; gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: .93rem;
+    color: #c9d1d9;
+  }
+  .step-list li:last-child { border-bottom: none; }
+  .step-num {
+    flex-shrink: 0;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #0d1117;
+    font-weight: 800;
+    font-size: .8rem;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 2px;
+  }
+
+  /* ── BADGE ── */
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: .75rem;
+    font-weight: 700;
+  }
+  .b-junit  { background: rgba(247,129,102,.15); color: var(--junit);  }
+  .b-testng { background: rgba(121,192,255,.15); color: var(--testng); }
+  .b-mock   { background: rgba(86,211,100,.15);  color: var(--mockito);}
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: .82rem;
+    border-top: 1px solid var(--border);
+    padding: 24px;
+    margin-top: 48px;
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">☕ Java Developer Guide</div>
+  <h1>Unit Testing <span>in Java</span></h1>
+  <p>Master JUnit, TestNG, and Mockito — explained simply with real code examples, interview tips, and comparisons.</p>
+  <div class="pill-row">
+    <button class="pill pill-all"  onclick="showTab('basics')">🎯 What is Unit Testing?</button>
+    <button class="pill pill-junit" onclick="showTab('junit')">JUnit 5</button>
+    <button class="pill pill-testng" onclick="showTab('testng')">TestNG</button>
+    <button class="pill pill-mock"  onclick="showTab('mockito')">Mockito</button>
+  </div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <button class="tab active" onclick="showTab('basics')">📖 Basics</button>
+  <button class="tab" onclick="showTab('junit')">JUnit 5</button>
+  <button class="tab" onclick="showTab('testng')">TestNG</button>
+  <button class="tab" onclick="showTab('mockito')">Mockito</button>
+  <button class="tab" onclick="showTab('compare')">⚖️ Compare</button>
+  <button class="tab" onclick="showTab('interview')">🎙️ Interview Q&A</button>
+</div>
+
+<div class="content">
+
+<!-- ════════ BASICS ════════ -->
+<div class="section active" id="tab-basics">
+  <div class="sec-header">
+    <div class="sec-icon" style="background:rgba(210,168,255,.12);">📖</div>
+    <div>
+      <div class="sec-title">What is Unit Testing?</div>
+      <div class="sec-sub">The foundation of reliable Java code</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>🔍 Simple Definition</h3>
+    <p>Unit Testing means testing the <strong>smallest piece of code</strong> (a single method or class) in isolation to make sure it works correctly. You write code that <em>tests your code</em>.</p>
+  </div>
+
+  <div class="note">
+    💡 <strong>Real-world analogy:</strong> Think of unit testing like testing each ingredient before cooking a dish. You taste the salt, the sugar, the flour — individually. That's unit testing. Tasting the final dish is integration testing.
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>✅ Why Write Tests?</h3>
+      <p>• Catch bugs early (cheaper to fix)<br>
+         • Confidence when refactoring code<br>
+         • Acts as live documentation<br>
+         • Required in most companies</p>
+    </div>
+    <div class="card">
+      <h3>🧱 What is a "Unit"?</h3>
+      <p>A unit is typically:<br>
+         • A single <strong>method</strong><br>
+         • A single <strong>class</strong><br>
+         It should NOT depend on a database, API, or file system.</p>
+    </div>
+  </div>
+
+  <h3 style="margin: 28px 0 12px; font-size:1.1rem;">🏗️ The AAA Pattern — Every Test Follows This</h3>
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <span>CalculatorTest.java</span>
+    </div>
+    <pre><span class="ann">@Test</span>
+<span class="kw">void</span> <span class="met">shouldAddTwoNumbers</span>() {
+
+    <span class="cmt">// ARRANGE — set up your data</span>
+    <span class="cls">Calculator</span> calc = <span class="kw">new</span> <span class="cls">Calculator</span>();
+
+    <span class="cmt">// ACT — call the method you're testing</span>
+    <span class="kw">int</span> result = calc.<span class="met">add</span>(<span class="num">3</span>, <span class="num">4</span>);
+
+    <span class="cmt">// ASSERT — verify the result</span>
+    <span class="met">assertEquals</span>(<span class="num">7</span>, result);
+}</pre>
+  </div>
+
+  <h3 style="margin: 28px 0 12px; font-size:1.1rem;">🛠️ The 3 Main Tools in Java</h3>
+  <div class="grid-2">
+    <div class="card" style="border-left: 3px solid var(--junit);">
+      <h3 style="color:var(--junit);">JUnit 5 <span class="badge b-junit">Most Popular</span></h3>
+      <p>The standard testing framework for Java. Used by almost every Java project. Provides <code>@Test</code>, assertions, lifecycle hooks.</p>
+    </div>
+    <div class="card" style="border-left: 3px solid var(--testng);">
+      <h3 style="color:var(--testng);">TestNG</h3>
+      <p>A powerful alternative to JUnit with extra features like test groups, parallel execution, and data providers (great for enterprise projects).</p>
+    </div>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--mockito);">
+    <h3 style="color:var(--mockito);">Mockito <span class="badge b-mock">Used WITH JUnit/TestNG</span></h3>
+    <p>A mocking library. When your class depends on a database or an API, Mockito creates a <strong>fake version</strong> of that dependency so you can test your class in isolation.</p>
+  </div>
+
+</div>
+
+<!-- ════════ JUNIT ════════ -->
+<div class="section" id="tab-junit">
+  <div class="sec-header">
+    <div class="sec-icon" style="background:rgba(247,129,102,.12);">🔴</div>
+    <div>
+      <div class="sec-title" style="color:var(--junit);">JUnit 5</div>
+      <div class="sec-sub">The most widely-used Java testing framework</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>What is JUnit?</h3>
+    <p>JUnit is a <strong>testing framework</strong> for Java. It lets you write test methods using annotations like <code>@Test</code>, provides assertion methods like <code>assertEquals</code>, and runs your tests automatically (e.g., in Maven/Gradle or your IDE).</p>
+  </div>
+
+  <h3 style="margin: 28px 0 16px; font-size:1.1rem;">📦 Maven Dependency</h3>
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <span>pom.xml</span>
+    </div>
+    <pre><span class="kw">&lt;dependency&gt;</span>
+    <span class="str">&lt;groupId&gt;</span>org.junit.jupiter<span class="str">&lt;/groupId&gt;</span>
+    <span class="str">&lt;artifactId&gt;</span>junit-jupiter<span class="str">&lt;/artifactId&gt;</span>
+    <span class="str">&lt;version&gt;</span>5.10.0<span class="str">&lt;/version&gt;</span>
+    <span class="str">&lt;scope&gt;</span>test<span class="str">&lt;/scope&gt;</span>
+<span class="kw">&lt;/dependency&gt;</span></pre>
+  </div>
+
+  <h3 style="margin: 28px 0 16px; font-size:1.1rem;">🏷️ Key JUnit 5 Annotations</h3>
+  <div class="grid-2">
+    <div class="card"><h3><code>@Test</code></h3><p>Marks a method as a test case. JUnit will run it automatically.</p></div>
+    <div class="card"><h3><code>@BeforeEach</code></h3><p>Runs before EACH test method. Good for setup (creating objects).</p></div>
+    <div class="card"><h3><code>@AfterEach</code></h3><p>Runs after EACH test method. Good for cleanup.</p></div>
+    <div class="card"><h3><code>@BeforeAll</code></h3><p>Runs ONCE before all tests in the class. Must be <code>static</code>.</p></div>
+    <div class="card"><h3><code>@AfterAll</code></h3><p>Runs ONCE after all tests in the class. Must be <code>static</code>.</p></div>
+    <div class="card"><h3><code>@Disabled</code></h3><p>Skips the test. Like commenting it out but keeps it visible.</p></div>
+    <div class="card"><h3><code>@DisplayName</code></h3><p>Gives a human-readable name to the test for reports.</p></div>
+    <div class="card"><h3><code>@ParameterizedTest</code></h3><p>Runs the same test with multiple inputs.</p></div>
+  </div>
+
+  <h3 style="margin: 28px 0 12px; font-size:1.1rem;">✅ Assertions (How to check results)</h3>
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <span>Assertions cheatsheet</span>
+    </div>
+    <pre><span class="cmt">// Check equality</span>
+<span class="met">assertEquals</span>(<span class="num">10</span>, result);
+
+<span class="cmt">// Check boolean</span>
+<span class="met">assertTrue</span>(result > <span class="num">0</span>);
+<span class="met">assertFalse</span>(list.isEmpty());
+
+<span class="cmt">// Check null</span>
+<span class="met">assertNotNull</span>(user);
+<span class="met">assertNull</span>(deletedUser);
+
+<span class="cmt">// Check exception is thrown</span>
+<span class="met">assertThrows</span>(<span class="cls">IllegalArgumentException</span>.class, () -> {
+    calc.<span class="met">divide</span>(<span class="num">10</span>, <span class="num">0</span>);
+});
+
+<span class="cmt">// Check multiple assertions together</span>
+<span class="met">assertAll</span>(
+    () -> <span class="met">assertEquals</span>(<span class="str">"Ankush"</span>, user.<span class="met">getName</span>()),
+    () -> <span class="met">assertEquals</span>(<span class="num">25</span>, user.<span class="met">getAge</span>())
+);</pre>
+  </div>
+
+  <h3 style="margin: 28px 0 12px; font-size:1.1rem;">🔢 Parameterized Test Example</h3>
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <span>Run same test with multiple inputs</span>
+    </div>
+    <pre><span class="ann">@ParameterizedTest</span>
+<span class="ann">@ValueSource</span>(ints = {<span class="num">2</span>, <span class="num">4</span>, <span class="num">6</span>, <span class="num">8</span>})
+<span class="kw">void</span> <span class="met">shouldBeEvenNumber</span>(<span class="kw">int</span> number) {
+    <span class="met">assertTrue</span>(number % <span class="num">2</span> == <span class="num">0</span>);
+}
+<span class="cmt">// Runs 4 times: once for 2, 4, 6, 8</span></pre>
+  </div>
+
+  <h3 style="margin: 28px 0 12px; font-size:1.1rem;">📋 Complete Example — Calculator Test</h3>
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <span>CalculatorTest.java</span>
+    </div>
+    <pre><span class="kw">import</span> org.junit.jupiter.api.*;
+<span class="kw">import static</span> org.junit.jupiter.api.<span class="cls">Assertions</span>.*;
+
+<span class="cls">class</span> <span class="cls">CalculatorTest</span> {
+
+    <span class="kw">private</span> <span class="cls">Calculator</span> calc;
+
+    <span class="ann">@BeforeEach</span>
+    <span class="kw">void</span> <span class="met">setUp</span>() {
+        calc = <span class="kw">new</span> <span class="cls">Calculator</span>(); <span class="cmt">// runs before each test</span>
+    }
+
+    <span class="ann">@Test</span>
+    <span class="ann">@DisplayName</span>(<span class="str">"3 + 4 should equal 7"</span>)
+    <span class="kw">void</span> <span class="met">testAdd</span>() {
+        <span class="kw">int</span> result = calc.<span class="met">add</span>(<span class="num">3</span>, <span class="num">4</span>);
+        <span class="met">assertEquals</span>(<span class="num">7</span>, result);
+    }
+
+    <span class="ann">@Test</span>
+    <span class="kw">void</span> <span class="met">testDivideByZeroThrowsException</span>() {
+        <span class="met">assertThrows</span>(<span class="cls">ArithmeticException</span>.class,
+            () -> calc.<span class="met">divide</span>(<span class="num">10</span>, <span class="num">0</span>));
+    }
+
+    <span class="ann">@Test</span>
+    <span class="ann">@Disabled</span>(<span class="str">"Feature not implemented yet"</span>)
+    <span class="kw">void</span> <span class="met">testSqrt</span>() {
+        <span class="cmt">// This test will be skipped</span>
+    }
+}</pre>
+  </div>
+</div>
+
+<!-- ════════ TESTNG ════════ -->
+<div class="section" id="tab-testng">
+  <div class="sec-header">
+    <div class="sec-icon" style="background:rgba(121,192,255,.12);">🔵</div>
+    <div>
+      <div class="sec-title" style="color:var(--testng);">TestNG</div>
+      <div class="sec-sub">Enterprise-grade testing — parallel, grouped, data-driven</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>What is TestNG?</h3>
+    <p>TestNG (Test Next Generation) is an alternative to JUnit with <strong>more powerful features</strong> like test grouping, parallel execution, and data providers. It's very popular in enterprise Java and Selenium test automation projects.</p>
+  </div>
+
+  <div class="note">
+    💡 <strong>Key difference:</strong> TestNG uses <code>testng.xml</code> to configure which tests run, their order, and grouping — JUnit doesn't have this central config file.
+  </div>
+
+  <h3 style="margin: 28px 0 16px; font-size:1.1rem;">🏷️ Key TestNG Annotations (vs JUnit)</h3>
+  <table>
+    <tr>
+      <th>Purpose</th>
+      <th style="color:var(--junit)">JUnit 5</th>
+      <th style="color:var(--testng)">TestNG</th>
+    </tr>
+    <tr><td>Mark a test</td><td><code>@Test</code></td><td><code>@Test</code></td></tr>
+    <tr><td>Before each test</td><td><code>@BeforeEach</code></td><td><code>@BeforeMethod</code></td></tr>
+    <tr><td>After each test</td><td><code>@AfterEach</code></td><td><code>@AfterMethod</code></td></tr>
+    <tr><td>Before all tests</td><td><code>@BeforeAll</code></td><td><code>@BeforeClass</code></td></tr>
+    <tr><td>After all tests</td><td><code>@AfterAll</code></td><td><code>@AfterClass</code></td></tr>
+    <tr><td>Skip a test</td><td><code>@Disabled</code></td><td><code>@Test(enabled=false)</code></td></tr>
+    <tr><td>Multiple inputs</td><td><code>@ParameterizedTest</code></td><td><code>@DataProvider</code></td></tr>
+    <tr><td>Group tests</td><td>❌ Not built-in</td><td><code>@Test(groups=...)</code> ✅</td></tr>
+    <tr><td>Parallel tests</td><td>Limited</td><td>✅ Built-in via XML</td></tr>
+  </table>
+
+  <h3 style="margin: 28px 0 12px; font-size:1.1rem;">🔑 Unique TestNG Features with Examples</h3>
+
+  <div class="card" style="border-left:3px solid var(--testng);">
+    <h3>1️⃣ Test Groups</h3>
+    <p style="margin-bottom:12px;">Group tests by category and run only specific groups. E.g., run only "smoke" tests before deployment.</p>
+  </div>
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <span>GroupsExample.java</span>
+    </div>
+    <pre><span class="ann">@Test</span>(groups = <span class="str">"smoke"</span>)
+<span class="kw">void</span> <span class="met">loginTest</span>() { ... }
+
+<span class="ann">@Test</span>(groups = <span class="str">"regression"</span>)
+<span class="kw">void</span> <span class="met">paymentTest</span>() { ... }
+
+<span class="cmt">// In testng.xml — run only smoke tests</span>
+<span class="kw">&lt;groups&gt;
+  &lt;run&gt;
+    &lt;include name=</span><span class="str">"smoke"</span><span class="kw">/&gt;
+  &lt;/run&gt;
+&lt;/groups&gt;</span></pre>
+  </div>
+
+  <div class="card" style="border-left:3px solid var(--testng);">
+    <h3>2️⃣ @DataProvider — Run test with multiple data sets</h3>
+    <p style="margin-bottom:12px;">Like JUnit's <code>@ParameterizedTest</code> but more flexible — can return Objects, not just primitives.</p>
+  </div>
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <span>DataProviderExample.java</span>
+    </div>
+    <pre><span class="ann">@DataProvider</span>(name = <span class="str">"loginData"</span>)
+<span class="kw">public</span> Object[][] <span class="met">getData</span>() {
+    <span class="kw">return new</span> Object[][] {
+        {<span class="str">"admin"</span>, <span class="str">"admin123"</span>, <span class="kw">true</span>},
+        {<span class="str">"user1"</span>, <span class="str">"wrong"</span>,    <span class="kw">false</span>},
+        {<span class="str">"ankush"</span>, <span class="str">"pass"</span>,   <span class="kw">true</span>}
+    };
+}
+
+<span class="ann">@Test</span>(dataProvider = <span class="str">"loginData"</span>)
+<span class="kw">void</span> <span class="met">testLogin</span>(<span class="cls">String</span> user, <span class="cls">String</span> pass, <span class="kw">boolean</span> expected) {
+    <span class="kw">boolean</span> actual = authService.<span class="met">login</span>(user, pass);
+    <span class="met">assertEquals</span>(expected, actual);
+}
+<span class="cmt">// Runs 3 times — once for each row of data</span></pre>
+  </div>
+
+  <div class="card" style="border-left:3px solid var(--testng);">
+    <h3>3️⃣ Test Priority & Dependencies</h3>
+    <p style="margin-bottom:12px;">Control the ORDER tests run and make one test depend on another.</p>
+  </div>
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <span>PriorityExample.java</span>
+    </div>
+    <pre><span class="ann">@Test</span>(priority = <span class="num">1</span>)
+<span class="kw">void</span> <span class="met">registerUser</span>() { ... }
+
+<span class="ann">@Test</span>(priority = <span class="num">2</span>, dependsOnMethods = <span class="str">"registerUser"</span>)
+<span class="kw">void</span> <span class="met">loginUser</span>() { ... }
+
+<span class="ann">@Test</span>(priority = <span class="num">3</span>, dependsOnMethods = <span class="str">"loginUser"</span>)
+<span class="kw">void</span> <span class="met">placeOrder</span>() { ... }</pre>
+  </div>
+</div>
+
+<!-- ════════ MOCKITO ════════ -->
+<div class="section" id="tab-mockito">
+  <div class="sec-header">
+    <div class="sec-icon" style="background:rgba(86,211,100,.12);">🟢</div>
+    <div>
+      <div class="sec-title" style="color:var(--mockito);">Mockito</div>
+      <div class="sec-sub">Replace real dependencies with fake ones for isolated testing</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>The Problem Mockito Solves</h3>
+    <p>Your <code>UserService</code> calls a <code>UserRepository</code> (database). In a unit test, you don't want to actually hit the DB. Mockito creates a <strong>fake (mock)</strong> <code>UserRepository</code> that returns whatever you tell it to.</p>
+  </div>
+
+  <div class="note">
+    💡 <strong>Analogy:</strong> You're rehearsing a play. The actor playing the villain is sick. You put a cardboard cutout in their place and PRETEND it's them. That's a mock — a fake stand-in that "acts" the way you tell it to.
+  </div>
+
+  <h3 style="margin: 28px 0 16px; font-size:1.1rem;">🔑 3 Core Concepts</h3>
+  <div class="grid-2">
+    <div class="card" style="border-left:3px solid var(--mockito);">
+      <h3>1. Mock</h3>
+      <p>A completely fake object. All its methods do nothing / return null by default. You control its behavior.</p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--yellow);">
+      <h3>2. Stub</h3>
+      <p>Telling the mock: "When THIS method is called, return THAT value." Uses <code>when(...).thenReturn(...)</code></p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--testng);">
+      <h3>3. Verify</h3>
+      <p>Checking the mock was actually called. "Was <code>save()</code> called exactly once?" Uses <code>verify(...)</code></p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--junit);">
+      <h3>4. Spy</h3>
+      <p>A partial mock — wraps a REAL object. Real methods run unless you override them.</p>
+    </div>
+  </div>
+
+  <h3 style="margin: 28px 0 12px; font-size:1.1rem;">📋 Typical Project Structure</h3>
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <span>UserService.java (the class we're testing)</span>
+    </div>
+    <pre><span class="kw">public class</span> <span class="cls">UserService</span> {
+
+    <span class="kw">private final</span> <span class="cls">UserRepository</span> userRepo; <span class="cmt">// dependency</span>
+
+    <span class="kw">public</span> <span class="cls">UserService</span>(<span class="cls">UserRepository</span> userRepo) {
+        <span class="kw">this</span>.userRepo = userRepo;
+    }
+
+    <span class="kw">public</span> <span class="cls">User</span> <span class="met">getUserById</span>(<span class="kw">long</span> id) {
+        <span class="kw">return</span> userRepo.<span class="met">findById</span>(id)
+            .orElseThrow(() -> <span class="kw">new</span> <span class="cls">RuntimeException</span>(<span class="str">"User not found"</span>));
+    }
+
+    <span class="kw">public</span> <span class="kw">void</span> <span class="met">saveUser</span>(<span class="cls">User</span> user) {
+        userRepo.<span class="met">save</span>(user);
+    }
+}</pre>
+  </div>
+
+  <h3 style="margin: 28px 0 12px; font-size:1.1rem;">✅ Full Mockito Test Example</h3>
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <span>UserServiceTest.java</span>
+    </div>
+    <pre><span class="kw">import</span> org.junit.jupiter.api.*;
+<span class="kw">import</span> org.mockito.*;
+<span class="kw">import static</span> org.mockito.Mockito.*;
+<span class="kw">import static</span> org.junit.jupiter.api.<span class="cls">Assertions</span>.*;
+
+<span class="ann">@ExtendWith</span>(<span class="cls">MockitoExtension</span>.class)
+<span class="kw">class</span> <span class="cls">UserServiceTest</span> {
+
+    <span class="ann">@Mock</span>
+    <span class="kw">private</span> <span class="cls">UserRepository</span> userRepo; <span class="cmt">// Mockito creates a fake</span>
+
+    <span class="ann">@InjectMocks</span>
+    <span class="kw">private</span> <span class="cls">UserService</span> userService; <span class="cmt">// injects the mock into service</span>
+
+    <span class="ann">@Test</span>
+    <span class="kw">void</span> <span class="met">shouldReturnUserWhenFound</span>() {
+        <span class="cmt">// ARRANGE — stub the mock</span>
+        <span class="cls">User</span> fakeUser = <span class="kw">new</span> <span class="cls">User</span>(<span class="num">1L</span>, <span class="str">"Ankush"</span>);
+        <span class="met">when</span>(userRepo.<span class="met">findById</span>(<span class="num">1L</span>))
+            .thenReturn(<span class="cls">Optional</span>.of(fakeUser));
+
+        <span class="cmt">// ACT</span>
+        <span class="cls">User</span> result = userService.<span class="met">getUserById</span>(<span class="num">1L</span>);
+
+        <span class="cmt">// ASSERT</span>
+        <span class="met">assertEquals</span>(<span class="str">"Ankush"</span>, result.<span class="met">getName</span>());
+    }
+
+    <span class="ann">@Test</span>
+    <span class="kw">void</span> <span class="met">shouldVerifySaveWasCalled</span>() {
+        <span class="cls">User</span> user = <span class="kw">new</span> <span class="cls">User</span>(<span class="num">2L</span>, <span class="str">"Rahul"</span>);
+
+        userService.<span class="met">saveUser</span>(user);
+
+        <span class="cmt">// VERIFY — was save() called exactly once?</span>
+        <span class="met">verify</span>(userRepo, <span class="met">times</span>(<span class="num">1</span>)).<span class="met">save</span>(user);
+    }
+
+    <span class="ann">@Test</span>
+    <span class="kw">void</span> <span class="met">shouldThrowWhenUserNotFound</span>() {
+        <span class="met">when</span>(userRepo.<span class="met">findById</span>(<span class="num">99L</span>))
+            .thenReturn(<span class="cls">Optional</span>.empty());
+
+        <span class="met">assertThrows</span>(<span class="cls">RuntimeException</span>.class,
+            () -> userService.<span class="met">getUserById</span>(<span class="num">99L</span>));
+    }
+}</pre>
+  </div>
+
+  <h3 style="margin: 28px 0 12px; font-size:1.1rem;">🔧 Common Mockito Methods</h3>
+  <table>
+    <tr><th>Method</th><th>What it does</th></tr>
+    <tr><td><code>mock(Class.class)</code></td><td>Creates a mock object manually</td></tr>
+    <tr><td><code>@Mock</code></td><td>Creates mock via annotation (cleaner)</td></tr>
+    <tr><td><code>@InjectMocks</code></td><td>Injects mocks into the class under test</td></tr>
+    <tr><td><code>when(x).thenReturn(y)</code></td><td>Stubbing — when x is called, return y</td></tr>
+    <tr><td><code>when(x).thenThrow(e)</code></td><td>When x is called, throw exception e</td></tr>
+    <tr><td><code>verify(mock).method()</code></td><td>Check that method was called</td></tr>
+    <tr><td><code>verify(mock, times(2))</code></td><td>Check method was called exactly 2 times</td></tr>
+    <tr><td><code>verify(mock, never())</code></td><td>Check method was NEVER called</td></tr>
+    <tr><td><code>any(), anyString()</code></td><td>Argument matchers — match any value</td></tr>
+    <tr><td><code>@Spy</code></td><td>Partial mock — wraps a real object</td></tr>
+  </table>
+
+  <div class="tip">
+    ✅ <strong>Pro Tip:</strong> Use <code>@ExtendWith(MockitoExtension.class)</code> on your test class — this automatically initializes all <code>@Mock</code> and <code>@InjectMocks</code> fields without needing <code>MockitoAnnotations.openMocks(this)</code>.
+  </div>
+</div>
+
+<!-- ════════ COMPARE ════════ -->
+<div class="section" id="tab-compare">
+  <div class="sec-header">
+    <div class="sec-icon" style="background:rgba(227,179,65,.12);">⚖️</div>
+    <div>
+      <div class="sec-title">JUnit vs TestNG vs Mockito</div>
+      <div class="sec-sub">Know which tool to pick and why</div>
+    </div>
+  </div>
+
+  <div class="note">
+    💡 These tools are NOT competitors — they work <strong>together</strong>. JUnit/TestNG = the test runner framework. Mockito = the mocking library used INSIDE your JUnit or TestNG tests.
+  </div>
+
+  <table>
+    <tr>
+      <th>Feature</th>
+      <th style="color:var(--junit)">JUnit 5</th>
+      <th style="color:var(--testng)">TestNG</th>
+      <th style="color:var(--mockito)">Mockito</th>
+    </tr>
+    <tr>
+      <td>Type</td>
+      <td>Test framework</td>
+      <td>Test framework</td>
+      <td>Mocking library</td>
+    </tr>
+    <tr>
+      <td>Spring Boot default</td>
+      <td class="check">✅ Yes</td>
+      <td class="cross">❌ No</td>
+      <td class="check">✅ Yes (with JUnit)</td>
+    </tr>
+    <tr>
+      <td>Industry popularity</td>
+      <td class="check">⭐⭐⭐⭐⭐ Most popular</td>
+      <td>⭐⭐⭐ Popular in enterprise</td>
+      <td class="check">⭐⭐⭐⭐⭐ Most popular mock lib</td>
+    </tr>
+    <tr>
+      <td>Test grouping</td>
+      <td class="cross">❌ Limited</td>
+      <td class="check">✅ Built-in</td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <td>Parallel execution</td>
+      <td>⚠️ Needs config</td>
+      <td class="check">✅ Built-in via XML</td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <td>Data-driven tests</td>
+      <td>@ParameterizedTest</td>
+      <td class="check">@DataProvider (more powerful)</td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <td>Test ordering</td>
+      <td>@TestMethodOrder</td>
+      <td class="check">priority= attribute</td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <td>Mocking</td>
+      <td class="cross">❌ Not built-in</td>
+      <td class="cross">❌ Not built-in</td>
+      <td class="check">✅ Its purpose</td>
+    </tr>
+    <tr>
+      <td>Use with Spring Boot</td>
+      <td class="check">✅ @SpringBootTest</td>
+      <td>⚠️ Needs setup</td>
+      <td class="check">✅ @MockBean</td>
+    </tr>
+  </table>
+
+  <h3 style="margin: 28px 0 12px; font-size:1.1rem;">🏆 When to Use What?</h3>
+  <div class="grid-2">
+    <div class="card" style="border-top:3px solid var(--junit);">
+      <h3 style="color:var(--junit);">Use JUnit 5 when...</h3>
+      <p>• You're in a Spring Boot project<br>
+         • You want the industry standard<br>
+         • You need simple, clean tests<br>
+         • You're starting a new project</p>
+    </div>
+    <div class="card" style="border-top:3px solid var(--testng);">
+      <h3 style="color:var(--testng);">Use TestNG when...</h3>
+      <p>• You need test grouping (smoke/regression)<br>
+         • You need parallel test execution<br>
+         • You're doing Selenium automation<br>
+         • You're in an enterprise legacy project</p>
+    </div>
+  </div>
+  <div class="card" style="border-top:3px solid var(--mockito);">
+    <h3 style="color:var(--mockito);">Use Mockito when...</h3>
+    <p>• Your class has dependencies (DB, API, services)<br>
+       • You want to test in isolation without hitting real resources<br>
+       • Always use this alongside JUnit 5 in Spring Boot projects</p>
+  </div>
+</div>
+
+<!-- ════════ INTERVIEW ════════ -->
+<div class="section" id="tab-interview">
+  <div class="sec-header">
+    <div class="sec-icon" style="background:rgba(86,211,100,.12);">🎙️</div>
+    <div>
+      <div class="sec-title">Interview Q&amp;A</div>
+      <div class="sec-sub">Most asked questions — crisp, confident answers</div>
+    </div>
+  </div>
+
+  <ul class="step-list">
+    <li>
+      <div class="step-num">1</div>
+      <div>
+        <strong>What is unit testing?</strong><br>
+        <span style="color:var(--muted); font-size:.88rem;">Testing individual methods/classes in isolation to verify they work correctly, without depending on real databases or APIs.</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">2</div>
+      <div>
+        <strong>What is the difference between JUnit and TestNG?</strong><br>
+        <span style="color:var(--muted); font-size:.88rem;">Both are testing frameworks. JUnit 5 is the Spring Boot default and simpler. TestNG has extra features like test groups, parallel execution, and @DataProvider. TestNG is popular for Selenium automation.</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">3</div>
+      <div>
+        <strong>What is Mockito? What is a mock?</strong><br>
+        <span style="color:var(--muted); font-size:.88rem;">Mockito is a mocking library. A mock is a fake object that simulates a real dependency (like a DB or API). It lets you test your class in isolation by controlling what the dependency returns.</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">4</div>
+      <div>
+        <strong>Difference between @Mock and @InjectMocks?</strong><br>
+        <span style="color:var(--muted); font-size:.88rem;"><code>@Mock</code> creates the fake dependency. <code>@InjectMocks</code> creates the class you're testing and automatically injects all <code>@Mock</code> fields into it.</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">5</div>
+      <div>
+        <strong>What is the AAA pattern?</strong><br>
+        <span style="color:var(--muted); font-size:.88rem;"><strong>Arrange</strong> (set up data), <strong>Act</strong> (call the method), <strong>Assert</strong> (verify the result). Every test follows this pattern.</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">6</div>
+      <div>
+        <strong>What is the difference between a Mock and a Spy?</strong><br>
+        <span style="color:var(--muted); font-size:.88rem;">A <strong>Mock</strong> is completely fake — all methods return null/default. A <strong>Spy</strong> wraps a REAL object — real methods run unless you specifically override them.</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">7</div>
+      <div>
+        <strong>What is <code>when().thenReturn()</code>?</strong><br>
+        <span style="color:var(--muted); font-size:.88rem;">Stubbing. It tells Mockito: "When THIS method is called on the mock, return THIS value." e.g., <code>when(repo.findById(1L)).thenReturn(Optional.of(user))</code></span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">8</div>
+      <div>
+        <strong>What annotations does JUnit 5 use for lifecycle?</strong><br>
+        <span style="color:var(--muted); font-size:.88rem;"><code>@BeforeEach</code>, <code>@AfterEach</code>, <code>@BeforeAll</code>, <code>@AfterAll</code>. BeforeAll/AfterAll must be static since they run once for the entire class.</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">9</div>
+      <div>
+        <strong>How do you test that an exception is thrown?</strong><br>
+        <span style="color:var(--muted); font-size:.88rem;">Use <code>assertThrows(ExceptionClass.class, () -> { methodCall(); })</code> in JUnit 5. TestNG uses <code>@Test(expectedExceptions = Exception.class)</code>.</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num">10</div>
+      <div>
+        <strong>What is @DataProvider in TestNG?</strong><br>
+        <span style="color:var(--muted); font-size:.88rem;">A TestNG feature that supplies multiple sets of input data to a test method. The test runs once for each data row. More flexible than JUnit's @ParameterizedTest since it can pass Objects.</span>
+      </div>
+    </li>
+  </ul>
+</div>
+
+</div><!-- end .content -->
+
+<div class="footer">
+  ☕ Java Unit Testing Guide &nbsp;·&nbsp; JUnit 5 · TestNG · Mockito &nbsp;·&nbsp; Built for interview prep
+</div>
+
+<script>
+function showTab(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  const tabs = document.querySelectorAll('.tab');
+  const idx = ['basics','junit','testng','mockito','compare','interview'].indexOf(name);
+  if(idx >= 0 && tabs[idx]) tabs[idx].classList.add('active');
+}
+</script>
+</body>
+</html>
